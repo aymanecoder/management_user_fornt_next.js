@@ -1,8 +1,10 @@
 import { Dialog, Transition } from '@headlessui/react';
 import React, { Fragment } from 'react'
 import { useState } from 'react';
-
+import UserList from './UserList'
 const AddUser = () => {
+    const USER_API_BASE_URL = "http://localhost:8082/api/v1/users";
+
     const [isOpen, setIsOpen] = useState(false)
     function closeModal(){
         setIsOpen(false);
@@ -11,6 +13,54 @@ const AddUser = () => {
     function openModal(){
         setIsOpen(true);
     }
+    const [user, setUser] = useState({
+        id:'',
+        firstName:'',
+        lastName:'',
+        emailId:'',
+    });
+    const [responseUser, setResponseUser] = useState({
+            id:'',
+            firstName:'',
+            lastName:'',
+            emailId:'',
+        
+        });
+    const handleChange =(event)=>{
+        const value = event.target.value;
+        setUser({...user,[event.target.name]:value});
+    }
+    const saveUser = async (e)=>{
+        
+        e.preventDefault();
+        const response = await fetch(USER_API_BASE_URL,{
+            method:'POST',
+            headers:{
+                "content-type": "application/json",
+            },
+            body: JSON.stringify(user),
+           
+        });
+        if(!response.ok){
+            throw new Error("Something went wrong");
+            // console.log("Something went wrong");
+        
+         }
+    const _user = await response.json();
+    setResponseUser(_user);
+    reset(e);
+    }
+    const reset = (e)=>{
+        e.preventDefault();
+        setUser({
+            id:'',
+            firstName:'',
+            lastName:'',
+            emailId:'',
+        });
+        setIsOpen(false);
+
+    };
   return (
    
     <div className='container mx-auto my-8'>
@@ -36,20 +86,21 @@ const AddUser = () => {
                                 <div className='py-2'>
                                     <div className='h-12 my-4'>
                                         <label className='block text-gray-600 text-sm font-normal'>First Name</label>
-                                        <input type='text' name="firstname" className='h-10 w-96 border mt-2 px-2 py-2' />
+                                        <input type='text' name="firstName" className='h-10 w-96 border mt-2 px-2 py-2' value={user.firstName} onChange={(e)=>handleChange(e)}/>
                                     </div>
-                                    <div className='h-12 my-4'>
+                                    <div className='h-12 my-5'>
                                         <label className='block text-gray-600 text-sm font-normal'>Last Name</label>
-                                        <input type='text' name="firstname" className='h-10 w-96 border mt-2 px-2 py-2' />
+                                        <input type='text' name="lastName" className='h-10 w-96 border mt-2 px-2 py-2' value={user.lastName} onChange={(e)=>handleChange(e)}/>
                                     </div>
-                                    <div className='h-12 my-4'>
+                                    <div className='h-12 my-5'>
                                         <label className='block text-gray-600 text-sm font-normal'>Email Id</label>
-                                        <input type='text' name="firstname" className='h-10 w-96 border mt-2 px-2 py-2' />
+                                        <input type='text' name="emailId" className='h-10 w-96 border mt-2 px-2 py-2' value={user.emailId} onChange={(e)=>handleChange(e)}/>
                                     </div>
                                     <div className='h-14 my-4 space-x-4 pt-4'>
-                                        <button className="rounded text-white font-semibold bg-green-400 hover:bg-green-700 py-2 px-6-">Save</button>
-                                        <div></div>
+                                        <button className="rounded text-white font-semibold bg-green-400 hover:bg-green-700 py-2 px-6" onClick={saveUser}>Save</button>
+                                        <button className="rounded text-white font-semibold bg-red-400 hover:bg-red-700 py-2 px-6" onClick={reset}>Close</button>
                                     </div>
+                                   
                                 </div>
                             </div>
                         </div>
@@ -59,6 +110,8 @@ const AddUser = () => {
 
             </Dialog>
         </Transition>
+        <UserList user={responseUser}/>
+    
     </div>
   )
 }

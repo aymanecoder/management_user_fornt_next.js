@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import User from './User'
 
-const UserList = () => {
+const UserList = ({ user }) => {
     const USER_API_BASE_URL = "http://localhost:8082/api/v1/users";
     const [users,setUsers]=useState(null);
     const [loading,setLoading] = useState(true);
+    const [userId, setUserId] = useState(null)
     useEffect(()=>{
         const fetchData = async()=>{
             setLoading(true);
@@ -27,7 +28,29 @@ const UserList = () => {
             setLoading(false);
         };
         fetchData();
-    },[]);
+    },[user]);
+
+    const deleteUser =(e,id)=>{
+        e.preventDefault();
+        fetch(USER_API_BASE_URL + '/' + id,{
+            method: 'DELETE',
+
+        }).then((res)=>{
+            if(users){
+                setUsers((prevElement)=>{
+                    return prevElement.filter((user)=>user.id !== id);
+
+                });
+
+            }
+        });
+        const updateUser =(e,id)=>{
+            e.preventDefault();
+            setUserId(id);
+            
+        }
+
+    }
     return ( 
     <div className="container mx-auto my-8">
         <div className="flex shadow border-b">
@@ -42,7 +65,7 @@ const UserList = () => {
                 </thead>
                {!loading ?( <tbody className="bg-white">
                    { users.map((user)=>(
-                        <User user={user} key={user.id}  />
+                        <User user={user} key={user.id}  deleteUser={deleteUser} updateUser={updateUser}/>
                     )
                     )}
                  </tbody>) : null }
